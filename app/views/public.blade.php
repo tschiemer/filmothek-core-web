@@ -30,6 +30,10 @@
             color: white;
             background-color: {{ Setting::get('style-bg-color','black') }};
             background-image: url("{{ Setting::get('style-bg-image','/uploads/background.jpg') }}");
+            
+            font-family: Times, Georgia, "Times New Roman", serif;
+            font-size: 14px;
+            line-height: 18px;
         }
         
         #logo {
@@ -44,13 +48,13 @@
     </style>
     
 </head>
-<body ng-controller="testController" filmothek-view="@{{ activeView }}" filmothek-category="@{{ activeCategory }}">
+<body ng-controller="testController" filmothek-view="@{{ activeView }}" filmothek-category="@{{ selectedCategory }}">
     
     <div id="logo"></div>
     
     <div class="viewer" active="@{{ activeView }}">
         <div class="slider">
-            <aside class="browser" active="@{{ activeCategory.key }}">
+            <aside class="browser" active="@{{ selectedCategory.key }}">
                 
                 <div class="menu">
                     <div class="search">
@@ -58,58 +62,73 @@
                     </div>
 
                     <div class="categories">
-                        <div class="caption">Ordne nach</div>
-                        <ul class="categories">
-                            <li ng-repeat="cat in categories">
-                                <a ng-click="selectCategory(cat)">Nach @{{ cat.label }}</a>
+                        <div class="caption">Suche</div>
+                        <ul class="categories" ng-model="selectedCategory">
+                            <li ng-repeat="cat in categories"
+                                ng-click="selectCategory(cat)"
+                                class="@{{ (selectedCategory != null && selectedCategory.label == cat.label ? 'selected' : '')}}">
+                                Nach @{{ cat.label }}
                             </li>
                         </ul>
                     </div>
 
                     <div class="sub-categories">
-                        <div class="caption" style="display:inline-block;width:98%;">@{{ activeCategory ? activeCategory.label : '' }}</div>
-                        <ul class="sub-categories">
-                            <li ng-repeat="subcat in subCategories">
-                                <a ng-click="selectSubCategory(subcat)">@{{ subcat }}</a>
-                            </li>
-                        </ul>
+                        <div class="caption" style="display:inline-block;width:98%;">@{{ selectedCategory ? selectedCategory.label : '' }}</div>
+                        <div class="scrollable">
+                            <ul class="sub-categories" ng-model="selectedSubCategory">
+                                <li ng-repeat="subcat in subCategories | orderBy:'label'"
+                                    ng-click="selectSubCategory(subcat)"
+                                    class="@{{ (selectedSubCategory != null && selectedSubCategory.key == subcat.key ? 'selected' : '')}}">
+                                    @{{ subcat.label }}
+                                </li>
+                                <li ng-show="!subCategories.length && searchInProgress" class="empty-result">Suchen..</li>
+                                <li ng-show="!subCategories.length && !searchInProgress" class="empty-result">Keine Resultate</li>
+                            </ul>
+                        </div>
                     </div>
 
                     <div class="films">
                         <div class="caption">Filme</div>
-                        <ul class="films">
-                            <li ng-repeat="film in films">
-                                <a ng-click="selectFilm(film)">@{{ film.title }}</a>
-                            </li>
-                        </ul>
+                        <div class="scrollable">
+                            <ul class="films" ng-model="selectedFilm">
+                                <li ng-repeat="film in films | orderBy:'title'"
+                                    ng-click="selectFilm(film)"
+                                    class="@{{ (selectedFilm != null && selectedFilm.id == film.id) ? 'selected' : '' }}">
+                                    @{{ film.title }}
+                                </li>
+                                <li ng-show="!films.length && selectedCategory.key != 'title' && selectedSubCategory == null" class="empty-result">Bitte @{{ selectedCategory.label }} auswählen.</li>
+                                <li ng-show="!films.length && selectedSubCategory != null && searchInProgress" class="empty-result">@{{ selectedCategory.key != 'title' ? 'Laden..' : 'Suchen..' }}</li>
+                                <li ng-show="!films.length && (selectedCategory.key == 'title' || selectedSubCategory != null) && !searchInProgress" class="empty-result">Keine Filme</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
-                <div id="title-view" class="film-details" ng-model="film" visible="@{{ film == null ? 'no' : 'yes'}}">
+                <div id="title-view" class="film-details" ng-model="selectedFilm" visible="@{{ selectedFilm == null ? 'no' : 'yes'}}">
                     <div class="preview-image">
                         <div>
-                            <img ng-src="@{{ film == null ? 'img/black.png' : (film.poster ? film.poster : 'uploads/no-poster.jpg') }}"/>
+                            <img ng-src="@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? selectedFilm.poster : 'uploads/no-poster.jpg') }}"/>
                         </div>
                     </div>
 
                     <aside style="position:absolute;background-color:transparent;margin-left:-203px;">
 
                         <div style="background-color:transparent;text-align:right;width:200px">
-                            <button ng-if="film.video" ng-click="showPlayer(film)" class="btn-play">Abspielen <span></span></button>
-                            <button ng-if="!film.video" disabled class="btn-no-film">Leider kein Film vorhanden.</button>
+                            <button ng-if="selectedFilm.video" ng-click="showPlayer(selectedFilm)" class="btn-play">Abspielen <span></span></button>
+                            <button ng-if="!selectedFilm.video" disabled class="btn-no-film">Leider kein Film vorhanden.</button>
                         </div>
 
                     </aside>
-                    <div class="caption"><b>@{{film.title}}</b><br/>@{{film.artist}}</div>
+                    <div class="caption"><b>@{{selectedFilm.title}}</b><br/>@{{selectedFilm.artist}}</div>
 
-                    @{{ film.country ? film.country : '?' }},
-                    @{{ film.year ? film.year : '?' }},
-                    @{{ film.length ? film.length : '?' }},
-                    @{{ film.technique ? film.technique : '?' }}
+                    @{{ selectedFilm.country ? selectedFilm.country : '?' }},
+                    @{{ selectedFilm.year ? selectedFilm.year : '?' }},
+                    @{{ selectedFilm.length ? selectedFilm.length : '?' }},
+                    @{{ selectedFilm.technique ? selectedFilm.technique : '?' }}
                 </div>
                 
             </aside>
-            <aside class="player" ng-model="film">
+            <aside class="player" ng-model="selectedFilm">
 <!--                <div style="position: relative; top: -20px;">
                     <button ng-click="showBrowser()" tabindex="-1">Browser</button>
                 </div>-->
@@ -131,7 +150,7 @@
                         </a>
                         
                         <span style="margin-left: 20px;">
-                            @{{ film.title }}
+                            @{{ selectedFilm.title }}, @{{ selectedFilm.artist }}
                         </span>
                     </p>
                 </div>

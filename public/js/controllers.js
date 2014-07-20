@@ -9,54 +9,64 @@ filmothekControllers.controller('testController', [
         $scope.activeView = 'browser';
         
         $scope.searchTerm = '';
+        
+        $scope.searchInProgress = false;
 
-        $scope.activeCategory = {key:'title'};
+        $scope.selectedCategory = {key:'title',label:'Titel'};
         $scope.categories = Category.query();
         $scope.selectCategory = function(cat){
             // do not change if in same subcategory
-            if ($scope.activeCategory.key == cat.key){
+            if ($scope.selectedCategory.key == cat.key){
                 return;
             }
             
-            $scope.activeCategory = cat;
-            $scope.film = null;
+            $scope.selectedCategory = cat;
+            $scope.selectedFilm = null;
             
-            if (cat.key == 'title'){
-                $scope.activeSubCategory = null;
-                $scope.subCategories = [];
-            } else {
-                $scope.searchCategory();
-            }
+//            if (cat.key == 'title'){
+                $scope.selectedSubCategory = null;
+//                $scope.subCategories = [];    
+//            }
+            $scope.films = [];
+            
+            $scope.search();
         };
         
-        $scope.activeSubCategory = null;
+        $scope.selectedSubCategory = null;
         $scope.subCategories = [];
-        $scope.selectSubCategory = function(subCatName){
-            if ($scope.activeSubCategory == subCatName){
+        $scope.selectSubCategory = function(subCat){
+            
+            if ($scope.selectedSubCategory != null && $scope.selectedSubCategory.key == subCat.key){
                 return;
             }
             
-            $scope.activeSubCategory = subCatName;
-            $scope.film = null;
+            $scope.selectedSubCategory = subCat;
+            $scope.selectedFilm = null;
+            $scope.films = [];
             
             $scope.searchFilms();
         };
         
-        $scope.film = null;
+        $scope.selectedFilm = null;
         
         $scope.selectFilm = function(film){
-            $scope.film = film;
+            $scope.selectedFilm = film;
         };
         
         Film.success = function(films){
-            $scope.films = films;  
+            $scope.films = films;
+            $scope.searchInProgress = false;
         };
         
         $scope.searchFilms = function(){
+            
+            $scope.searchInProgress = true;
+            $scope.films = [];
+            
             var filter = {};
             
-            if ($scope.activeSubCategory != null) {
-                filter[$scope.activeCategory.key] = $scope.activeSubCategory;
+            if ($scope.selectedSubCategory != null) {
+                filter[$scope.selectedCategory.key] = $scope.selectedSubCategory.label;
             }
             
             filter.search = $scope.searchTerm;
@@ -67,23 +77,48 @@ filmothekControllers.controller('testController', [
         
         
         
-        Category.success = function(cat){
-            $scope.subCategories = cat;
-            $scope.films = [];
-        };
+//        Category.success = function(cat){
+//            console.log(cat);
+//            var indexedCat = [];
+//            for(var i in cat){
+//                console.log(cat[i]);
+//                indexedCat.push({
+//                   key: i,
+//                   label: cat[i]
+//                });
+//            }
+//            $scope.subCategories = indexedCat;
+//            $scope.films = [];
+//        };
         
         $scope.searchCategory = function(){
-            if ($scope.activeCategory.key == 'title'){
+            if ($scope.selectedCategory.key == 'title'){
                 return;
             }
+            
+            $scope.searchInProgress = true;
+            $scope.subCategories = [];
+            
             $scope.subCategories = Category.query({
-                subCat: $scope.activeCategory.key,
+                subCat: $scope.selectedCategory.key,
                 search: $scope.searchTerm
             });
+            
+            $scope.searchInProgress = false;
+//            var indexed = [];
+//            for(var i in stringList){
+//                console.log(stringList[i]);
+//                indexed.push({
+//                    key: i,
+//                    label: stringList[i]
+//                });
+//            }
+//            $scope.subCategories = indexed;
         }
         
         $scope.search = function(){
-            if ($scope.activeCategory.key == 'title'){
+//            console.log('searching with: '+$scope.searchTerm);
+            if ($scope.selectedCategory.key == 'title'){
                 $scope.searchFilms();
             } else {
                 $scope.searchCategory();

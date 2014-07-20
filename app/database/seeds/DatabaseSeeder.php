@@ -14,14 +14,14 @@ class DatabaseSeeder extends Seeder {
 		// $this->call('UserTableSeeder');
                 
                 $artists = array(
-                  'John Smith','Nicolas Provost','Hannelore Frank','Godard'  
+                  'John Smith','Nicolas Provost','Hannelore Frank','Godard','Pic','Art','Louis','Vuitton','Buñuel','Jonas Mekas','John Doe','Leonardo DiCaprio','François','Bill','Bob','Alice'
                 );
                 
                 $countries = array(
-                    'Switzerland','Deutschland','Österreich','Frankreich','Spanien','Venezuela','Belgien','Niederlande','Grossbritannien'
+                    'Switzerland','Deutschland','Österreich','Frankreich','Spanien','Venezuela','Belgien','Niederlande','Grossbritannien','Chile','Bolivien','Norwegen','Schweden','Finland','Russland','Antipoden'
                 );
                 
-                for($i = 0; $i < 10; $i++){
+                for($i = 0; $i < 100; $i++){
                     $film = new Film();
                     $film->nr = $i;
                     $film->title = 'Titel '.$i;

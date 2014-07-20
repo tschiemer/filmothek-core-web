@@ -66,6 +66,8 @@ Route::get('/film/id/{film}',function(Film $film){
 
 Route::post('/film',function(){
     
+    $search = Input::get('search');
+    
     $query = DB::table('films');
             
     if (Input::get('title')){
@@ -81,23 +83,27 @@ Route::post('/film',function(){
         $query = $query->where('technique','like','%'.Input::get('technique').'%');
     }
     
-    if ( ! Input::get('search')){
-        $search = Input::get('search');
+    if ( ! empty($search)){
         $query = $query->where(function($q)use($search){
             $q->where('nr','like',"%{$search}%");
-            if (!Input::get('title')){
+//            if (!Input::get('title'))
+                {
                 $q->orWhere('title','like',"%{$search}%");
             }
-            if (!Input::get('artist')){
+//            if (!Input::get('artist'))
+                {
                 $q->orWhere('artist','like',"%{$search}%");
             }
-            if (!Input::get('country')){
+//            if (!Input::get('country'))
+                {
                 $q->orWhere('country','like',"%{$search}%");
             }
-            if (!Input::get('year')){
+//            if (!Input::get('year'))
+                {
                 $q->orWhere('year','like',"%{$search}%");
             }
-            if (!Input::get('technique')){
+//            if (!Input::get('technique'))
+                {
                 $q->orWhere('technique','like',"%{$search}%");
             }
         });
@@ -111,9 +117,18 @@ Route::get('/category/{subcat?}/{search?}',function($subcat = NULL, $search = NU
     
     if (in_array($subcat,array('artist','country','technique'))){
         if (empty($search)){
-            return Film::distinct()->lists($subcat);
+            $result =  Film::distinct()->lists($subcat);
+        } else {
+            $result = Film::where($subcat,'like',"%{$search}%")->distinct()->lists($subcat);
         }
-        return Film::where('country','like',"%{$search}%")->distinct()->lists($subcat);
+//        $i = 1;
+        return array_map(function($label)use($i){
+            static $i = 1;
+            return array(
+                'key' => $i++,
+                'label' => $label
+            );
+        }, $result);
     }
         
         
