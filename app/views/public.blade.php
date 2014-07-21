@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     
-    <title>{{ Setting::get('page-title','Filmothek') }}</title>
+    <title>{{ Setting::get('pageTitle','Filmothek') }}</title>
     
     <meta name="author" content="Philip Tschiemer, filou.se"/>
-    <meta name="description" content=""/>
-    <meta name="keywords"   content=""/>
+    <meta name="description" content="{{ Setting::get('pageKeywords','') }}"/>
+    <meta name="keywords"   content="{{ Setting::get('pageDescription','') }}"/>
     
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/angular-route/angular-route.js"></script>
@@ -27,9 +27,11 @@
         .video-js.vjs-default-skin .vjs-big-play-button { display: none; }
         
         body {
-            color: white;
-            background-color: {{ Setting::get('style-bg-color','black') }};
-            background-image: url("{{ Setting::get('style-bg-image','/uploads/background.jpg') }}");
+            color: {{ Setting::get('colorPageText','black') }};
+            background-color: {{ Setting::get('colorPageText','white') }};
+            @if(Setting::get('imageBackground'))
+            background-image: url("uploads/{{ Setting::get('imageBackground') }}");
+            @endif
             
             font-family: Times, Georgia, "Times New Roman", serif;
             font-size: 14px;
@@ -37,49 +39,52 @@
         }
         
         #logo {
-            background-image: url("{{ Setting::get('style-logo-image','/uploads/logo.png') }}");
+            @if(Setting::get('imageLogo'))
+            background-image: url("uploads/{{ Setting::get('imageLogo') }}");
+            @endif
         }
         
         div.search, div.categories, div.sub-categories, div.films {
-            color: {{ Setting::get('style-menu-color','black') }};
-            background-color: {{ Setting::get('style-menu-bgcolor','white') }};
+            color: {{ Setting::get('colorMenuText','black') }};
+            background-color: {{ Setting::get('colorMenuBg','white') }};
         }
         
         .search input {
-            color: {{ Setting::get('style-search-color','black') }};
-            background-color: {{ Setting::get('style-search-bgcolor','white') }};
+            color: {{ Setting::get('colorSearchText','black') }};
+            background-color: {{ Setting::get('colorSearchBg','white') }};
+        }
+        
+        .film-details {
+            /*background-color: white;*/
+            background-color: {{ Setting::get('colorFilmdetailsBG','white') }};
         }
         
         li {
-            color: {{ Setting::get('style-list-color','black') }};
-            background-color: {{ Setting::get('style-list-bgcolor','white') }};
+            color: {{ Setting::get('colorListText','black') }};
+            background-color: {{ Setting::get('colorListBg','white') }};
         }
         li.empty-result {
-            color: {{ Setting::get('style-list-color','black') }};
-            background-color: {{ Setting::get('style-list-bgcolor','white') }};
+            color: {{ Setting::get('colorListText','black') }};
+            background-color: {{ Setting::get('colorListBg','white') }};
         }
         li.selected {
-            color: {{ Setting::get('style-list-selected-color','white') }};
-            background-color: {{ Setting::get('style-list-selected-bgcolor','#008e36') }};
+            color: {{ Setting::get('colorListSelectedText','white') }};
+            background-color: {{ Setting::get('colorListSelectedBg','#008e36') }};
         }
         li:hover {
-            color: {{ Setting::get('style-list-hover-color','white') }};
-            background-color: {{ Setting::get('style-list-hover-bgcolor','#008e36') }};
+            color: {{ Setting::get('colorListHoverText','white') }};
+            background-color: {{ Setting::get('colorListHoverBg','#008e36') }};
         }
         
         .caption {
             font-family: Verdana, sans-serif;
             text-transform: uppercase;
-            color: {{ Setting::get('style-caption-color','black') }};
+            color: {{ Setting::get('colorCaptionText','black') }};
             /*background-color: {{ Setting::get('style-caption-bgcolor','white') }};*/
         }
         
-        .film-details {
-            /*background-color: white;*/
-            background-color: {{ Setting::get('style-filmdetails-bgcolor','white') }};
-        }
         .preview-image div {
-            background-color: {{ Setting::get('style-filmposter-bgcolor','white') }};
+            background-color: {{ Setting::get('colorFilmposterBg','black') }};
             /*background-color: black;*/
         }
         
@@ -156,7 +161,11 @@
                 <div id="title-view" class="film-details" ng-model="selectedFilm" visible="@{{ selectedFilm == null ? 'no' : 'yes'}}">
                     <div class="preview-image">
                         <div>
-                            <img ng-src="@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? selectedFilm.poster : 'uploads/no-poster.jpg') }}"/>
+                            @if(Setting::get('imageNoPoster'))
+                            <img ng-src="{{{ "@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? selectedFilm.poster : 'uploads/". Setting::get('imageNoPoster') ."') }}" }}}"/>
+                            @else
+                            <img ng-src="@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? selectedFilm.poster : 'img/no-poster.jpg') }}"/>
+                            @endif
                         </div>
                     </div>
 

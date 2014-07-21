@@ -55,6 +55,8 @@
                         };
 
                         $scope.colors = {
+                            colorPageText       : '#000000',
+                            colorPageBg         : '#ffffff',
                             colorMenuText       : '#000000',
                             colorMenuBg         : '#ffffff',
                             colorSearchText     : '#000000',
@@ -67,13 +69,14 @@
                             colorListTextSelected: '#ffffff',
                             colorListBgSelected : '#008e36',
                             colorCaptionText    : '#000000',
-                            colorFilmposterBG   : '#000000'
+                            colorFilmposterBg   : '#000000'
                             
                         };
                         
                         $scope.images = {
                             imageBackground : null,
-                            imageLogo       : null
+                            imageLogo       : null,
+                            imageNoPoster   : null
                         };
 
                         $http.get('settings/ajax').success(function(data) {
@@ -159,6 +162,7 @@
     </script>
     
     <style>
+        body {padding-bottom: 100px;}
         .tab-pane {padding-top:20px;}
         input.ng-dirty {background-color: lightsalmon;}
         .imageDrop {
@@ -232,6 +236,25 @@
                             
                     </div>
                     <div class="tab-pane" id="colors" ng-form="colorsForm">
+                        
+                        <div class="form-group clearfix">
+                            <label class="col-sm-4">Seite Textfarbe</label>
+                            <div class="col-sm-6">
+                                <input colorpicker ng-model="colors.colorPageText" placeholder="" type="text" class="form-control"/>
+                            </div>
+                            <div class="col-sm-2" ng-model="colors.colorPageText">
+                                <input disabled class="form-control" style="background-color: @{{colors.colorPageText}}">
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <label class="col-sm-4">Seite Hintergrundfarbe</label>
+                            <div class="col-sm-6">
+                                <input colorpicker ng-model="colors.colorPageBg" placeholder="" type="text" class="form-control"/>
+                            </div>
+                            <div class="col-sm-2" ng-model="colors.colorPageBg">
+                                <input disabled class="form-control" style="background-color: @{{colors.colorPageBg}}">
+                            </div>
+                        </div>
                         
                         <div class="form-group clearfix">
                             <label class="col-sm-4">Listenkasten rechts Textfarbe</label>
@@ -349,10 +372,10 @@
                         <div class="form-group clearfix">
                             <label class="col-sm-4">Überschriften Hintergrundfarbe</label>
                             <div class="col-sm-6">
-                                <input colorpicker ng-model="colors.colorFilmposterBG" placeholder="" type="text" class="form-control"/>
+                                <input colorpicker ng-model="colors.colorFilmposterBg" placeholder="" type="text" class="form-control"/>
                             </div>
-                            <div class="col-sm-2" ng-model="colors.colorFilmposterBG">
-                                <input disabled class="form-control" style="background-color: @{{colors.colorFilmposterBG}}">
+                            <div class="col-sm-2" ng-model="colors.colorFilmposterBg">
+                                <input disabled class="form-control" style="background-color: @{{colors.colorFilmposterBg}}">
                             </div>
                         </div>
 
@@ -421,6 +444,29 @@
                             </div>
                         </div>
                         
+                        <div class="form-group clearfix" ng-model="images.imageBackground">
+                            <label class="col-sm-3">Film-Poster (fehlt) Ersatzbild </label>
+                            <div class="col-sm-6">
+                                <a ng-show="images.imageNoPoster" ng-href="@{{ images.imageNoPoster ? 'uploads/'+images.imageNoPoster : 'img/black.png'}}" target="_blank">
+                                    <img ng-src="@{{ images.imageNoPoster ? 'uploads/'+images.imageNoPoster : 'img/black.png'}}" ng-show="images.imageNoPoster" style='max-width:100%;;border: 1px solid black'>
+                                </a>
+                                <span ng-show="!images.imageNoPoster">Kein Hintergrundbild hochgeladen!</span>
+                            </div>
+                            <div class="col-sm-3">
+                                
+                                <div ng-file-drop="onImageSelect('imageNoPoster',$files)"
+                                     ng-file-drag-over-class="'imageDropDragOver'"
+                                     class="imageDrop clearfix">Ziehe neues Bild hierhin</div>
+                                
+                                <br><br/><br/>
+                                
+                                <div class="clearfix">
+                                    <button class="btn btn-danger" ng-click="deleteImage('imageNoPoster')"
+                                            ng-show="images.imageNoPoster">Löschen</button>
+                                </div>
+                            </div>
+                        </div>
+                        
                     </div>
                     <div class="tab-pane" id="films">
                         {{ Form::open(array('url'=>'settings','class'=>'form-horizontal','role'=>'form')) }} 
@@ -430,6 +476,19 @@
                 </div>
             </div>
             
+        </div>
+        
+        <div class="container">
+             <footer  style="margin-top:50px;padding:10px;text-align:center">
+                <small>
+                    <p>
+                        &copy; 2014 <a href='http://www.fantoche.ch' target="_blank">Fantoche - Internationales Festival für Animationsfilm</a>, Baden Switzerland. <br/>
+                        Open source licensed under GPLv2, <a href="http://github.com/tschiemer/filmothek" target="_blank">download from Github</a><br/>
+                        Author: <a href="http://filou.se" target="_blank">filou.se</a>
+                    </p>
+
+                </small>
+            </footer>
         </div>
     </div>
 
