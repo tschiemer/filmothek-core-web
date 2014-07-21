@@ -149,9 +149,67 @@ Route::get('/settings',function(){
     return View::make('settings');
 });
 
-Route::post('/settings',function(){
-   
-    Setting::set('page-title',Input::get('page-title'));
-    
-    return Redirect::to('settings');
+Route::get('/settings/ajax',function(){ 
+//    if (Request::ajax()){
+        return Setting::all()->toJson();
+//    }
 });
+
+Route::post('/settings/ajax',function(){
+   
+    
+//    if (Request::ajax()){
+        $settings = Input::get();
+        foreach($settings as $key => $value){
+            if (preg_match('/^image/',$key)){
+                //delete upload
+                
+                $filename = Setting::get($key,NULL);
+                if (!empty($filename)){
+                    $filePath = public_path('uploads/'.$filename);
+                    unlink($filePath);
+                }
+            }
+            Setting::set($key,$value);
+        }
+        return;
+//    }
+    
+    
+//    Setting::set('page-title',Input::get('page-title'));
+    
+//    return Redirect::to('settings');
+});
+
+Route::post('/settings/upload/{key}',function($key){
+//    return Input::get();
+//    return var_dump($_FILES);
+    
+//    unlink(public_path('uploads/jpeg/php1nd5Fy'));
+//    unlink(public_path('uploads/jpeg/phpLzDEat'));
+//    unlink(public_path('uploads/jpeg'));
+//    unlink(public_path('uploads/toy love.jpeg/phpN4BEDo'));
+//    unlink(public_path('uploads/toy love.jpeg/phpmOhkvi'));
+//    rmdir(public_path('uploads/toy love.jpeg'));
+    
+    if (!Input::hasFile('file') or !Input::file('file')->isValid()){
+        App::abort(500);
+    }
+    
+    
+    $filename = Setting::get($key,NULL);
+    if (!empty($filename)){
+        $filePath = public_path('uploads/'.$filename);
+        if (file_exists($filePath)){
+            unlink($filePath);
+        }
+    }
+    
+    $destinationPath = public_path('uploads/');
+    Input::file('file')->move($destinationPath,Input::file('file')->getClientOriginalName());
+    Setting::set($key,Input::file('file')->getClientOriginalName());
+});
+
+//Route::get('/uploads',function(){
+//    return;
+//});

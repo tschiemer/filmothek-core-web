@@ -37,13 +37,62 @@
         }
         
         #logo {
-            position:fixed;
-            top:0;
-            left:0;
-            width:100%;
-            height:100%;
             background-image: url("{{ Setting::get('style-logo-image','/uploads/logo.png') }}");
-            background-repeat: no-repeat;
+        }
+        
+        div.search, div.categories, div.sub-categories, div.films {
+            color: {{ Setting::get('style-menu-color','black') }};
+            background-color: {{ Setting::get('style-menu-bgcolor','white') }};
+        }
+        
+        .search input {
+            color: {{ Setting::get('style-search-color','black') }};
+            background-color: {{ Setting::get('style-search-bgcolor','white') }};
+        }
+        
+        li {
+            color: {{ Setting::get('style-list-color','black') }};
+            background-color: {{ Setting::get('style-list-bgcolor','white') }};
+        }
+        li.empty-result {
+            color: {{ Setting::get('style-list-color','black') }};
+            background-color: {{ Setting::get('style-list-bgcolor','white') }};
+        }
+        li.selected {
+            color: {{ Setting::get('style-list-selected-color','white') }};
+            background-color: {{ Setting::get('style-list-selected-bgcolor','#008e36') }};
+        }
+        li:hover {
+            color: {{ Setting::get('style-list-hover-color','white') }};
+            background-color: {{ Setting::get('style-list-hover-bgcolor','#008e36') }};
+        }
+        
+        .caption {
+            font-family: Verdana, sans-serif;
+            text-transform: uppercase;
+            color: {{ Setting::get('style-caption-color','black') }};
+            /*background-color: {{ Setting::get('style-caption-bgcolor','white') }};*/
+        }
+        
+        .film-details {
+            /*background-color: white;*/
+            background-color: {{ Setting::get('style-filmdetails-bgcolor','white') }};
+        }
+        .preview-image div {
+            background-color: {{ Setting::get('style-filmposter-bgcolor','white') }};
+            /*background-color: black;*/
+        }
+        
+        .btn-no-film {
+            border: 1px solid lightcoral;
+            background-color: lightcoral;
+            color: white;
+        }
+
+        .btn-play {
+            border: 1px solid #008e36;
+            background-color: #008e36;
+            color: white;
         }
     </style>
     
