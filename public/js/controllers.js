@@ -127,19 +127,36 @@ filmothekControllers.controller('testController', [
         
         $scope.search();
         
+        $scope.playTimeout = null;
         $scope.showPlayer = function(film){
+            if (!film.video){
+                return;
+            }
+            
             $scope.activeView = 'player';
             
             var frameStyle = window.getComputedStyle(document.getElementsByClassName('player')[0], null);
             $scope.videojs.width(frameStyle.getPropertyValue('width'));
             $scope.videojs.height(frameStyle.getPropertyValue('height'));
             
-            $scope.videojs.currentTime(0.1);
 //            $scope.videojs.posterImage.el.style.display = 'none';
             
             
-            $scope.videojs.poster(film.poster);
-            $scope.videojs.src(film.video);
+            if (film.poster){
+                $scope.videojs.poster(settings.filesDir + film.poster);
+            } else {
+                $scope.videojs.poster(false);
+            }
+            $scope.videojs.src(settings.filesDir + film.video).ready(function(){
+                $scope.videojs.currentTime(0);
+                if ($scope.activeView == 'player'){
+                    $scope.playTimeout = window.setTimeout(function(){
+                        $scope.videojs.play();
+                        $scope.playTimeout = null;
+                    }, 1000);
+                }
+            });
+            
             
             
 //            var player = document.getElementById('video-player');
@@ -156,9 +173,6 @@ filmothekControllers.controller('testController', [
 //                player.appendChild(source);
 //            }
             
-            window.setTimeout(function(){
-                $scope.videojs.play();
-            }, 2000);
         };
         
         $scope.videojs = videojs(document.getElementById('video-player'),{},function(){
@@ -168,7 +182,11 @@ filmothekControllers.controller('testController', [
         $scope.showBrowser = function(){
             $scope.activeView = 'browser';
             
-            $scope.videojs.pause();            
+            $scope.videojs.pause();
+            if($scope.playTimeout != null){
+                window.clearTimeout($scope.playTimeout);
+                $scope.playTimeout = null;
+            }
         }
         
         $scope.video = {};

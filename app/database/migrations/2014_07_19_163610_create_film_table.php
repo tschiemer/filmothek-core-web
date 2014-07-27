@@ -17,14 +17,15 @@ class CreateFilmTable extends Migration {
                     
                     $table->string('nr');
                     $table->string('title');
-                    $table->string('artist');
-                    $table->string('country');
-                    $table->string('year');
-                    $table->string('length');
-                    $table->string('technique');
+                    $table->string('title_en')->nullable()->default(null);
+                    $table->string('artist')->nullable()->default(null);
+                    $table->string('country')->nullable()->default(null);
+                    $table->string('year')->nullable()->default(null);
+                    $table->string('length')->nullable()->default(null);
+                    $table->string('technique')->nullable()->default(null);
                     
-                    $table->string('poster')->nullable()->default(false);
-                    $table->string('video')->nullable()->default(false);
+                    $table->string('poster')->nullable()->default(null);
+                    $table->string('video')->nullable()->default(null);
                 });
 	}
 

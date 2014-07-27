@@ -9,6 +9,13 @@
     <meta name="description" content="{{ Setting::get('pageKeywords','') }}"/>
     <meta name="keywords"   content="{{ Setting::get('pageDescription','') }}"/>
     
+    <script>
+    
+    var settings = {
+        'filesDir': '{{Setting::get('dirFilesPublic','films/')}}'
+    };
+    
+    </script>
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/angular-route/angular-route.js"></script>
     <script src="bower_components/angular-resource/angular-resource.js"></script>
@@ -28,7 +35,7 @@
         
         body {
             color: {{ Setting::get('colorPageText','black') }};
-            background-color: {{ Setting::get('colorPageText','white') }};
+            background-color: {{ Setting::get('colorPageBg','white') }};
             @if(Setting::get('imageBackground'))
             background-image: url("uploads/{{ Setting::get('imageBackground') }}");
             @endif
@@ -56,7 +63,7 @@
         
         .film-details {
             /*background-color: white;*/
-            background-color: {{ Setting::get('colorFilmdetailsBG','white') }};
+            background-color: {{ Setting::get('colorFilmdetailsBg','white') }};
         }
         
         li {
@@ -102,7 +109,7 @@
     </style>
     
 </head>
-<body ng-controller="testController" filmothek-view="@{{ activeView }}" filmothek-category="@{{ selectedCategory }}">
+<body oncontextmenu="return false;" ng-controller="testController" filmothek-view="@{{ activeView }}" filmothek-category="@{{ selectedCategory }}">
     
     <div id="logo"></div>
     
@@ -162,9 +169,9 @@
                     <div class="preview-image">
                         <div>
                             @if(Setting::get('imageNoPoster'))
-                            <img ng-src="{{{ "@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? selectedFilm.poster : 'uploads/". Setting::get('imageNoPoster') ."') }}" }}}"/>
+                            <img ng-src="{{{ "@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? '".Setting::get('dirFilesPublic',  'films/')."'+selectedFilm.poster : 'uploads/". Setting::get('imageNoPoster') ."') }}" }}}"/>
                             @else
-                            <img ng-src="@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? selectedFilm.poster : 'img/no-poster.jpg') }}"/>
+                            <img ng-src="{{{ "@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? '".Setting::get('dirFilesPublic',  'films/')."'+selectedFilm.poster : 'img/no-poster.jpg') }}" }}}"/>
                             @endif
                         </div>
                     </div>
@@ -207,9 +214,9 @@
                             <i  class="glyphicon glyphicon-chevron-left"></i> Zurück
                         </a>
                         
-                        <span style="margin-left: 20px;">
+                        <a style="margin-left: 20px;">
                             @{{ selectedFilm.title }}, @{{ selectedFilm.artist }}
-                        </span>
+                        </a>
                     </p>
                 </div>
                 

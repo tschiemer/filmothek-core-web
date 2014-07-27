@@ -120,30 +120,19 @@
                         };
                         
                         $scope.onImageSelect = function(key,$files) {
-                            console.log(key);
+//                            console.log(key);
                             //$files: an array of files selected, each file has name, size, and type.
                             var file = $files[0];
                             $upload.upload({
                                 url: 'settings/upload/'+key, //upload.php script, node.js route, or servlet url
                                 method: 'POST',
                                 //headers: {'header-key': 'header-value'},
-                                //withCredentials: true,
-//                                data: {myObj: $scope.myModelObj},
-                                file: file, // or list of files ($files) for html5 only
-                                //fileName: 'doc.jpg' or ['1.jpg', '2.jpg', ...] // to modify the name of the file(s)
-                            // customize file formData name ('Content-Desposition'), server side file variable name. 
-                                //fileFormDataName: myFile, //or a list of names for multiple files (html5). Default is 'file' 
-                                // customize how data is added to formData. See #40#issuecomment-28612000 for sample code
-                                //formDataAppender: function(formData, key, val){}
+                                file: file,
                               }).success(function(data, status, headers, config) {
                                 $scope.images[key] = file.name;
                               }).error(function(response,code){
                                   alert(response.error.message);
                               });
-                              //.error(...)
-                              //.then(success, error, progress); 
-                              // access or attach event listeners to the underlying XMLHttpRequest.
-                              //.xhr(function(xhr){xhr.upload.addEventListener(...)})
                         };
                         
                         $scope.deleteImage = function(key){
@@ -151,6 +140,59 @@
                             obj[key] = null;
                             $http.post('settings/ajax',obj).success(function(){
                                $scope.images[key] = null; 
+                            });
+                        };
+                        
+                        $http.get('settings/film').success(function(data) {
+                            $scope.films = data;
+                        });
+                        
+                        $scope.updateFilm = function(film){
+                            $http.post('settings/film/'+film.id,film);
+                        };
+                        
+                        $scope.importInProgress = false;
+                        $scope.onFilmImport = function($files){
+                            $scope.importInProgress = true;
+                            var file = $files[0];
+                            $upload.upload({
+                                url: 'settings/import-films', //upload.php script, node.js route, or servlet url
+                                method: 'POST',
+                                //headers: {'header-key': 'header-value'},
+                                file: file,
+                                }).success(function(data, status, headers, config) {
+                                    $http.get('settings/film').success(function(data) {
+                                        $scope.films = data;
+                                        //alert('Filme importiert');
+                                        $scope.importInProgress = false;
+                                    });
+                                }).error(function(response,code){
+                                    alert(response.error.message);
+                                    $scope.importInProgress = false;
+                                });
+                        };
+                        
+                        $scope.scanInProgress = false;
+                        $scope.scanAllFilmFiles = function(){
+                            $scope.scanInProgress = true;
+                            $http.get('settings/scan-for-files').success(function(){
+                                $http.get('settings/film').success(function(data) {
+                                    $scope.films = data;
+                                    alert('Files scan completed.');
+                                    $scope.scanInProgress = false;
+                                });
+                            }).error(function(response,code){
+                                alert(response);
+                                $scope.scanInProgress = false;
+                            });
+                        };
+                        
+                        $scope.deleteAllFilms = function(){
+                            $http.delete('settings/film').success(function(){
+                                $scope.films = [];
+                            }).error(function(data,data2){
+                                console.log(data);
+                                console.log(data2);
                             });
                         };
 
@@ -165,7 +207,7 @@
         body {padding-bottom: 100px;}
         .tab-pane {padding-top:20px;}
         input.ng-dirty {background-color: lightsalmon;}
-        .imageDrop {
+        .fileDrop {
             display: inline-block;
             width: 100%;
             text-align: center;
@@ -173,9 +215,19 @@
             
             border: 3px dashed black;
         }
-        .imageDropDragOver {
+        .fileDropDragOver {
             border: 3px solid red;
         }
+        
+        #film input.ng-dirty {background-color:}
+        #film input[type=text]{
+            border-width: 0px;
+        }
+        
+        #film input[type=text]:focus {
+            border:-width: 1px;
+        }
+        
     </style>
 </head>
 <body ng-controller="settingController">
@@ -197,7 +249,8 @@
                     <li><a href="#page" role="tab" data-toggle="tab">Seiteneinstellungen</a></li>
                     <li><a href="#colors" role="tab" data-toggle="tab">Farben</a></li>
                     <li><a href="#images" role="tab" data-toggle="tab">Bilder</a></li>
-                    <li><a href="#films" role="tab" data-toggle="tab">Filme</a></li>
+                    <li><a href="#film-list" role="tab" data-toggle="tab">Filme (@{{ films ? films.length : 0 }})</a></li>
+                    <li><a href="#film-import" role="tab" data-toggle="tab">Film-Admin (u.A. Import)</a></li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane active" id="security">
@@ -297,9 +350,9 @@
                         <div class="form-group clearfix">
                             <label class="col-sm-4">Filmdetails Hintergrundfarbe</label>
                             <div class="col-sm-6">
-                                <input colorpicker ng-model="colors.colorFilmdetailsBG" placeholder="" type="text" class="form-control"/>
+                                <input colorpicker ng-model="colors.colorFilmdetailsBg" placeholder="" type="text" class="form-control"/>
                             </div>
-                            <div class="col-sm-2" ng-model="colors.colorFilmdetailsBG">
+                            <div class="col-sm-2" ng-model="colors.colorFilmdetailsBg">
                                 <input disabled class="form-control" style="background-color: @{{colors.colorFilmdetailsBG}}">
                             </div>
                         </div>
@@ -408,8 +461,8 @@
                             <div class="col-sm-3">
                                 
                                 <div ng-file-drop="onImageSelect('imageLogo',$files)"
-                                     ng-file-drag-over-class="'imageDropDragOver'"
-                                     class="imageDrop clearfix">Ziehe neues Bild hierhin</div>
+                                     ng-file-drag-over-class="'fileDropDragOver'"
+                                     class="fileDrop clearfix">Ziehe neues Bild hierhin</div>
                                 
                                 <br><br/><br/>
                                 
@@ -432,8 +485,8 @@
                             <div class="col-sm-3">
                                 
                                 <div ng-file-drop="onImageSelect('imageBackground',$files)"
-                                     ng-file-drag-over-class="'imageDropDragOver'"
-                                     class="imageDrop clearfix">Ziehe neues Bild hierhin</div>
+                                     ng-file-drag-over-class="'fileDropDragOver'"
+                                     class="fileDrop clearfix">Ziehe neues Bild hierhin</div>
                                 
                                 <br><br/><br/>
                                 
@@ -455,8 +508,8 @@
                             <div class="col-sm-3">
                                 
                                 <div ng-file-drop="onImageSelect('imageNoPoster',$files)"
-                                     ng-file-drag-over-class="'imageDropDragOver'"
-                                     class="imageDrop clearfix">Ziehe neues Bild hierhin</div>
+                                     ng-file-drag-over-class="'fileDropDragOver'"
+                                     class="fileDrop clearfix">Ziehe neues Bild hierhin</div>
                                 
                                 <br><br/><br/>
                                 
@@ -468,10 +521,94 @@
                         </div>
                         
                     </div>
-                    <div class="tab-pane" id="films">
-                        {{ Form::open(array('url'=>'settings','class'=>'form-horizontal','role'=>'form')) }} 
-                        <input type="hidden" name="section" value="films"/>
-                        {{ Form::close() }} 
+                    <div class="tab-pane" id="film-list">
+                        
+                        <table class="table table-condensed table-hover">
+                            <thead>
+                                <tr>
+                                    <td>Nr</td>
+                                    <td>Titel</td>
+                                    <td>Titel (eng)</td>
+                                    <td>Regie</td>
+                                    <td>Land</td>
+                                    <td>Jahr</td>
+                                    <td>Dauer</td>
+                                    <td>Techniken</td>
+                                    <td>Poster</td>
+                                    <td>Film</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="film in films | orderBy:'nr'">
+                                    <td>
+                                        <input ng-model="film.nr" placeholder="<Nr>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                    </td>
+                                    <td>
+                                        <input ng-model="film.title" placeholder="<Titel>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                    </td>
+                                    <td>
+                                        <input ng-model="film.title_en" placeholder="<Titel (eng)>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                    </td>
+                                    <td>
+                                        <input ng-model="film.artist" placeholder="<Regie>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                    </td>
+                                    <td>
+                                        <input ng-model="film.country" placeholder="<Land>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                    </td>
+                                    <td>
+                                        <input ng-model="film.year" placeholder="<Jahr>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                    </td>
+                                    <td>
+                                        <input ng-model="film.length" placeholder="<Dauer>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                    </td>
+                                    <td>
+                                        <input ng-model="film.technique" placeholder="<Techniken>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                    </td>
+                                    <td>
+                                        <i class="glyphicon glyphicon-ok" ng-show="film.poster"></i>
+                                        <i class="glyphicon glyphicon-remove" style="color:red"  ng-show="!film.poster"></i>
+                                    </td>
+                                    <td>
+                                        <i class="glyphicon glyphicon-ok" ng-show="film.video"></i>
+                                        <i class="glyphicon glyphicon-remove" style="color:red" ng-show="!film.video"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane" id="film-import">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                Film-Import
+                            </div>
+                            <div class="col-sm-6">
+                                <div ng-file-drop="onFilmImport($files)"
+                                     ng-file-drag-over-class="'fileDropDragOver'"
+                                     class="fileDrop clearfix"
+                                     ng-show="!importInProgress">Ziehe Excelliste hierhin</div>
+                                <div ng-show="importInProgress" class="fileDrop clearfix">Am Importieren, bitte warten..</div>
+                                <p class="help-block">
+                                    Die Spalten <em>müssen</em> folgende Namen tragen: nr, title, title_en, artist, country, year, length, technique
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                Scanne nach Film-Dateien (Poster, Videos)
+                            </div>
+                            <div class="col-sm-3">
+                                <button ng-show="!scanInProgress" class="btn btn-info" ng-click="scanAllFilmFiles()">Scanne..</button>
+                                <button ng-show="scanInProgress" class="btn btn-info" disabled>Scanne..</button>
+                            </div>
+                        </div>
+                        <div class="row" style="margin: 50px 10px; border:2px solid #d9534f; padding: 30px">
+                            <div class="col-sm-3">
+                                Lösche alle Filme von DB
+                            </div>
+                            <div class="col-sm-3">
+                                <button class="btn btn-danger" ng-click="deleteAllFilms()">Lösche</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
