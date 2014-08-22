@@ -12,7 +12,7 @@
     <script>
     
     var settings = {
-        'filesDir': '{{Setting::get('dirFilesPublic','films/')}}'
+        'filesDir': '{{Setting::get('dirFilesPublic','films')}}'+'/'
     };
     
     </script>
@@ -152,10 +152,11 @@
                         <div class="caption">Filme</div>
                         <div class="scrollable">
                             <ul class="films" ng-model="selectedFilm">
-                                <li ng-repeat="film in films | orderBy:'title'"
+                                <li ng-repeat="film in films | orderBy:'titleSort'"
                                     ng-click="selectFilm(film)"
                                     class="@{{ (selectedFilm != null && selectedFilm.id == film.id) ? 'selected' : '' }}">
-                                    @{{ film.title }}
+                                    <span ng-show="film.title_en">@{{ film.title_en }} <i><small>@{{ film.title }}</small></i></span>
+                                    <span ng-show="!film.title_en">@{{ film.title }}</span>
                                 </li>
                                 <li ng-show="!films.length && selectedCategory.key != 'title' && selectedSubCategory == null" class="empty-result">Bitte @{{ selectedCategory.label }} auswählen.</li>
                                 <li ng-show="!films.length && selectedSubCategory != null && searchInProgress" class="empty-result">@{{ selectedCategory.key != 'title' ? 'Laden..' : 'Suchen..' }}</li>
@@ -169,9 +170,9 @@
                     <div class="preview-image">
                         <div>
                             @if(Setting::get('imageNoPoster'))
-                            <img ng-src="{{{ "@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? '".Setting::get('dirFilesPublic',  'films/')."'+selectedFilm.poster : 'uploads/". Setting::get('imageNoPoster') ."') }}" }}}"/>
+                            <img ng-src="{{{ "@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? '".Setting::get('dirFilesPublic',  'films')."/'+selectedFilm.poster : 'uploads/". Setting::get('imageNoPoster') ."') }}" }}}"/>
                             @else
-                            <img ng-src="{{{ "@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? '".Setting::get('dirFilesPublic',  'films/')."'+selectedFilm.poster : 'img/no-poster.jpg') }}" }}}"/>
+                            <img ng-src="{{{ "@{{ selectedFilm == null ? 'img/black.png' : (selectedFilm.poster ? '".Setting::get('dirFilesPublic',  'films')."/'+selectedFilm.poster : 'img/no-poster.jpg') }}" }}}"/>
                             @endif
                         </div>
                     </div>

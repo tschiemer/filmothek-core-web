@@ -78,6 +78,11 @@
                             imageLogo       : null,
                             imageNoPoster   : null
                         };
+                        
+                        $scope.files = {
+                            dirFilesReal: null,
+                            dirFilesPublic: null
+                        };
 
                         $http.get('settings/ajax').success(function(data) {
                             for(var i in data){
@@ -89,6 +94,9 @@
                                 }
                                 if (data[i].key.match(/^image/)){
                                     $scope.images[data[i].key] = data[i].value;
+                                }
+                                if (data[i].key.match(/^(file|dir)/)){
+                                    $scope.files[data[i].key] = data[i].value;
                                 }
                             }
                         });
@@ -147,6 +155,20 @@
                             $scope.films = data;
                         });
                         
+                        
+                        $scope.saveFiles = function(key){
+                            var obj = {};
+                            if (key == undefined){
+                                obj = $scope.files;
+                            } else {
+                                obj[key] = $scope.files[key];
+                            }
+                            
+                            $http.post('settings/ajax',obj).success(function(){
+                                $scope.filesForm.$setPristine();
+                            });
+                        };
+                        
                         $scope.updateFilm = function(film){
                             $http.post('settings/film/'+film.id,film);
                         };
@@ -182,7 +204,8 @@
                                     $scope.scanInProgress = false;
                                 });
                             }).error(function(response,code){
-                                alert(response);
+//                                console.log(response);
+                                alert(response.error.message);
                                 $scope.scanInProgress = false;
                             });
                         };
@@ -577,6 +600,26 @@
                         </table>
                     </div>
                     <div class="tab-pane" id="film-import">
+                        <div class="row" ng-form="filesForm" style="margin-bottom: 30px;">
+                            <div class="col-sm-3">
+                                Interner Ordner-Pfad f. Film-Dateien
+                            </div>
+                            <div class="col-sm-9">
+                                    <input ng-model="files.dirFilesReal" placeholder="" type="text" class="form-control"/>
+                                    <p class="help-block">Unter diesem absoluten Dateipfad müssen sich sämtliche Film-Dateien befinden. Wird zum scannen verwendet.</p>
+                            </div>
+                            
+                            <div class="col-sm-3">
+                                Web Ordner-Pfad f. Film-Dateien
+                            </div>
+                            <div class="col-sm-9">
+                                    <input ng-model="files.dirFilesPublic" placeholder="/films" type="text" class="form-control"/>
+                                    <p class="help-block">Unter diesem relativen Dateipfad zum Webserver müssen sich alle Film-Dateien befinden, die abrufbar sein sollten.</p>
+                            </div>
+                            
+                            <button class="col-sm-offset-3 btn btn-default" ng-click="saveFiles()">Speichere Pfäde</button>
+                            
+                        </div>
                         <div class="row">
                             <div class="col-sm-3">
                                 Film-Import

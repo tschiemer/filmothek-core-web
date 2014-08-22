@@ -11,6 +11,16 @@
 |
 */
 
+if (!Schema::hasTable('settings'))
+{
+    Route::get('/{any?}',function($any=NULL){
+        return 'No database detected. Please migrate first.';
+    });
+    
+    return;
+}
+
+
 Route::get('/', function()
 {
 	return View::make('public');
@@ -25,7 +35,8 @@ Route::post('/film',function(){
     $query = DB::table('films');
             
     if (Input::get('title')){
-        $query = $query->where('title','like','%'.Input::get('title').'%');
+        $query = $query->where('title','like','%'.Input::get('title').'%')
+                        ->orWhere('title_en','like','%'.Input::get('title').'%');
     }
     if (Input::get('artist')){
         $query = $query->where('artist','like','%'.Input::get('artist').'%');
@@ -256,12 +267,21 @@ Route::group(array('prefix'=>'settings'),function(){
             if (preg_match("/(?:.*){$film->nr}(?:.*)\.(jpg|jpeg|png|gif)/",$files,$matches)){
     //            echo "Matches for poster {$film->nr}<br/>";
                 $film->poster = $matches[0];
+                
+//                try {
+//                    $f = $dirPath . '/' . $matches[0];
+//                    $image = Intervention\Image\Facades\Image::make($f);
+//                    $image->fit(500,400);
+//                    $image->save();
+//                } catch(Exception $e){
+//                    // do nothing
+//                }
             } else {
                 $film->poster = null;
             }
 
             // scan for poster
-            if (preg_match("/(?:.*){$film->nr}(?:.*)\.(mov|mp4|mv4)/",$files,$matches)){
+            if (preg_match("/(?:.*){$film->nr}(?:.*)\.(mov|mp4|mv4|m4v)/",$files,$matches)){
     //            echo "Matches for video {$film->nr}<br/>";
                 $film->video = $matches[0];
             } else {
@@ -273,6 +293,17 @@ Route::group(array('prefix'=>'settings'),function(){
     });
 });
 
+//if (Setting::get('dirFilesPublic',false)){
+//    Route::get(Setting::get('dirFilesPublic').'/{filename}',function($filename = NULL){
+//        $filepath = Setting::get('dirFilesReal',  public_path('films')) . '/' . $filename;
+//        
+//        if (!file_exists($filepath)){
+//            App::abort(404);
+//        }
+//        
+//        return readfile($filepath);
+//    });
+//}
 
 //Route::get('/uploads',function(){
 //    return;

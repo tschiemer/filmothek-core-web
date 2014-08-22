@@ -54,6 +54,9 @@ filmothekControllers.controller('testController', [
         };
         
         Film.success = function(films){
+            for(var i in films){
+                films[i].titleSort = films[i].title_en ? films[i].title_en : films[i].title;
+            }
             $scope.films = films;
             $scope.searchInProgress = false;
         };
