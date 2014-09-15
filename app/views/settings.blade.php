@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     
-    <title>{{ Setting::get('page-title','Filmothek') }}</title>
+    <title>{{ Setting::get('pageTitle','Filmothek') }}</title>
     
     <meta name="author" content="Philip Tschiemer, filou.se"/>
     
@@ -51,7 +51,9 @@
                         $scope.page = {
                             pageTitle       : 'Filmothek',
                             pageKeywords    : '',
-                            pageDescription : ''
+                            pageDescription : '',
+                            pageSearchVisible: true,
+                            pageCategoriesVisible: true,
                         };
 
                         $scope.colors = {
@@ -90,7 +92,11 @@
                                     $scope.colors[data[i].key] = data[i].value;
                                 }
                                 if (data[i].key.match(/^page/)){
-                                    $scope.page[data[i].key] = data[i].value;
+                                    if (data[i].key.match(/Visible/)){
+                                        $scope.page[data[i].key] = data[i].value == 1;
+                                    } else {
+                                        $scope.page[data[i].key] = data[i].value;
+                                    }
                                 }
                                 if (data[i].key.match(/^image/)){
                                     $scope.images[data[i].key] = data[i].value;
@@ -267,8 +273,19 @@
     <div class="container">
         <div class="row">
             <div class="col-sm-12">
+                <script>
+                    $(document).ready(function () {
+                        var hash = window.location.hash.replace('/','');
+                        
+                        if (!hash) {
+                            hash = '#page';
+                        }
+                        var selectedTab = $('.nav li a[href="' + hash + '"]');
+                        selectedTab.trigger('click', true);
+                    });
+                </script>
                 <ul class="nav nav-tabs" role="tablist">
-                    <li class="active"><a href="#security" role="tab" data-toggle="tab">Sicherheit</a></li>
+                    <!--<li class="active"><a href="#security" role="tab" data-toggle="tab">Sicherheit</a></li>-->
                     <li><a href="#page" role="tab" data-toggle="tab">Seiteneinstellungen</a></li>
                     <li><a href="#colors" role="tab" data-toggle="tab">Farben</a></li>
                     <li><a href="#images" role="tab" data-toggle="tab">Bilder</a></li>
@@ -276,22 +293,25 @@
                     <li><a href="#film-import" role="tab" data-toggle="tab">Film-Admin (u.A. Import)</a></li>
                 </ul>
                 <div class="tab-content">
-                    <div class="tab-pane active" id="security">
+<!--                    <div class="tab-pane active" id="security">
                         
-                    </div>
+                    </div>-->
                     <div class="tab-pane" id="page" ng-form="pageForm">
                         
                         <div class="form-group clearfix">
-                            <label class="col-sm-4">Page Title</label>
+                            <label class="col-sm-4">Webapp Titel</label>
                             <div class="col-sm-8">
                                 <input placeholder="Filmothek" type="text" class="form-control" ng-model="page.pageTitle"/>
+                                <p class="help-block">
+                                    Dieser Name wird als Webseiten-Titel verwendet (insb. auf den Einstellungsseiten), ist also nicht immer zwingend sichtbar. Der Titel erscheint z.B. als Name beim Speichern von Favoriten u. Dergleichen, was im Zusammenhang mit der Filmothek-Kiosk-Software irrelevant ist.
+                                </p>
                             </div>
                         </div>
 
-                        <div class="form-group clearfix">
+<!--                        <div class="form-group clearfix">
                             <label class="col-sm-4">HTML Meta Keywords</label>
                             <div class="col-sm-8">
-                                <textarea placeholder="Filmothek, Film Viewer, .."class="form-control" ng-model="page.pageKeywords"></textarea>
+                                <textarea placeholder="Filmothek, Film Viewer, .." class="form-control" ng-model="page.pageKeywords"></textarea>
                             </div>
                         </div>
 
@@ -301,8 +321,28 @@
                             <div class="col-sm-8">
                                 <textarea placeholder="Web-Filmothek of film entries." class="form-control" ng-model="page.pageDescription"></textarea>
                             </div>
+                        </div>-->
+
+                        <div class="form-group clearfix">
+                            <label class="col-sm-4">Suchmaske sichtbar/aktiviert</label>
+                            <div class="col-sm-8">
+                                <input name="pageSearchVisible" ng-model="page.pageSearchVisible" type="checkbox">
+                                <p class="help-block">
+                                    Wenn aktiviert, so ist die Suchmaske sichtbar und kann benutzt werden, sonst ist die Maske ausgeblendet und unnutzbar.
+                                </p>
+                            </div>
                         </div>
 
+
+                        <div class="form-group clearfix">
+                            <label class="col-sm-4">Kategorien-Filter sichtbar/aktiviert</label>
+                            <div class="col-sm-8">
+                                <input name="pageCategoriesVisible" ng-model="page.pageCategoriesVisible" type="checkbox">
+                                <p class="help-block">
+                                    Wenn aktiviert, so sind die Kategorien sichtbar und kann als Filter-Instrument eingesetzt werden. Wenn deaktiviert so werden die Kategorien ausgeblendet und es wird lediglich eine Liste aller Filme angezeigt.
+                                </p>
+                            </div>
+                        </div>
 
                         <div class="form-group clearfix">
                             <div class="col-sm-offset-4 col-sm-8">
@@ -527,6 +567,8 @@
                                     <img ng-src="@{{ images.imageNoPoster ? 'uploads/'+images.imageNoPoster : 'img/black.png'}}" ng-show="images.imageNoPoster" style='max-width:100%;;border: 1px solid black'>
                                 </a>
                                 <span ng-show="!images.imageNoPoster">Kein Hintergrundbild hochgeladen!</span>
+                                
+                            <p class="help-block">Ist für ein Film kein Snapshot vorhanden, so wird in der Detailansicht dieses Bild angezeigt.<br>Format: 16:9</p>
                             </div>
                             <div class="col-sm-3">
                                 
@@ -546,6 +588,12 @@
                     </div>
                     <div class="tab-pane" id="film-list">
                         
+                        <small class="help-block">
+                            Es folgt eine Liste aller vorhandenen Filme. Diese werden alle angezeigt und es ist möglich nach ihnen zu suchen.
+                            Zu jedem Film wird angezeigt, ob ein kompatibles Poster und Film gefunden wurde (s.a. Tab <em>Film-Admin</em>).<br/>
+                            <b>Änderungen</b> werden sofort übernommen (kein zusätzliches <em>Speichern</em> notwendig).
+                        </small>
+                        
                         <table class="table table-condensed table-hover">
                             <thead>
                                 <tr>
@@ -564,28 +612,28 @@
                             <tbody>
                                 <tr ng-repeat="film in films | orderBy:'nr'">
                                     <td>
-                                        <input ng-model="film.nr" placeholder="<Nr>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                        <input ng-model="film.nr" placeholder="" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
                                     </td>
                                     <td>
-                                        <input ng-model="film.title" placeholder="<Titel>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                        <input ng-model="film.title" placeholder="" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
                                     </td>
                                     <td>
-                                        <input ng-model="film.title_en" placeholder="<Titel (eng)>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                        <input ng-model="film.title_en" placeholder="" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
                                     </td>
                                     <td>
-                                        <input ng-model="film.artist" placeholder="<Regie>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                        <input ng-model="film.artist" placeholder="" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
                                     </td>
                                     <td>
-                                        <input ng-model="film.country" placeholder="<Land>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                        <input ng-model="film.country" placeholder="" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
                                     </td>
                                     <td>
-                                        <input ng-model="film.year" placeholder="<Jahr>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                        <input ng-model="film.year" placeholder="" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
                                     </td>
                                     <td>
-                                        <input ng-model="film.length" placeholder="<Dauer>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                        <input ng-model="film.length" placeholder="" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
                                     </td>
                                     <td>
-                                        <input ng-model="film.technique" placeholder="<Techniken>" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
+                                        <input ng-model="film.technique" placeholder="" ng-change="updateFilm(film)" class="form-control input-sm" type="text">
                                     </td>
                                     <td>
                                         <i class="glyphicon glyphicon-ok" ng-show="film.poster"></i>
@@ -631,25 +679,35 @@
                                      ng-show="!importInProgress">Ziehe Excelliste hierhin</div>
                                 <div ng-show="importInProgress" class="fileDrop clearfix">Am Importieren, bitte warten..</div>
                                 <p class="help-block">
-                                    Die Spalten <em>müssen</em> folgende Namen tragen: nr, title, title_en, artist, country, year, length, technique
+                                    Die Spalten <em>müssen</em> folgende Namen (1. Zeile) tragen, um erkannt zu werden; Reihenfolge
+                                    egal: <code>nr, title, title_en, artist, country, year, length, technique</code>
                                 </p>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row" style="margin-top:20px;">
                             <div class="col-sm-3">
                                 Scanne nach Film-Dateien (Poster, Videos)
                             </div>
-                            <div class="col-sm-3">
+                            <div class="col-sm-6">
                                 <button ng-show="!scanInProgress" class="btn btn-info" ng-click="scanAllFilmFiles()">Scanne..</button>
                                 <button ng-show="scanInProgress" class="btn btn-info" disabled>Scanne..</button>
+                                
+                                <p class="help-block">
+                                    Überprüft für jeden Film in der Datenbank, ob unter dem internen Ordner-Pfad eine Snapshot-Datei
+                                    [jpg, jpeg, png, gif] sowie eine Filmdatei [mov, mp4, mv4, m4v] vorhanden sind. Um korrekt zugeordnet
+                                    werden zu können <em>muss</em> jede Datei die Film-Nr (aus dem Feld <em>nr</em>) im Dateinamen tragen.
+                                </p>
                             </div>
                         </div>
                         <div class="row" style="margin: 50px 10px; border:2px solid #d9534f; padding: 30px">
-                            <div class="col-sm-3">
-                                Lösche alle Filme von DB
+                            <div class="col-sm-3 text-center">
+                                <b>Lösche alle Filme von DB</b>
                             </div>
-                            <div class="col-sm-3">
-                                <button class="btn btn-danger" ng-click="deleteAllFilms()">Lösche</button>
+                            <div class="col-sm-6 text-center">
+                                Gefahr, Gefahr! <button class="btn btn-danger" ng-click="deleteAllFilms()">Lösche</button> Gefahr, Gefahr!
+                            </div>
+                            <div class="col-sm-3 text-center">
+                                <b>Lösche alle Filme von DB</b>
                             </div>
                         </div>
                     </div>

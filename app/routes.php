@@ -118,7 +118,7 @@ Route::group(array('prefix'=>'settings'),function(){
 
     Route::get('/ajax',function(){ 
     //    if (Request::ajax()){
-            return Setting::all()->toJson();
+            return Setting::all()->toJson(JSON_NUMERIC_CHECK);
     //    }
     });
 
@@ -185,30 +185,36 @@ Route::group(array('prefix'=>'settings'),function(){
 
     Route::post('/film/{film}',function(Film $film){
 
-        if (Input::get('title')){
+        if (Input::get('nr',NULL) !== NULL){
+            $film->nr = Input::get('nr');
+        }
+        if (Input::get('title',NULL) !== NULL){
             $film->title = Input::get('title');
         }
-        if (Input::get('title_en')){
+        if (Input::get('title_en',NULL) !== NULL){
             $film->title_en = Input::get('title_en');
         }
-        if (Input::get('artist')){
+        if (Input::get('artist',NULL) !== NULL){
             $film->artist = Input::get('artist');
         }
-        if (Input::get('country')){
+        if (Input::get('country',NULL) !== NULL){
             $film->country = Input::get('country');
         }
-        if (Input::get('length')){
-            $film->country = Input::get('length');
+        if (Input::get('year',NULL) !== NULL){
+            $film->year = Input::get('year');
         }
-        if (Input::get('technique')){
-            $film->country = Input::get('technique');
+        if (Input::get('length',NULL) !== NULL){
+            $film->length = Input::get('length');
+        }
+        if (Input::get('technique',NULL) !== NULL){
+            $film->technique = Input::get('technique');
         }
 
         $film->save();
 
     });
 
-    Route::post('/film/{$film}',function(Film $film){
+    Route::delete('/film/{$film}',function(Film $film){
         $film->delete();
     });
 

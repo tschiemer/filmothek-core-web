@@ -38,6 +38,7 @@
             background-color: {{ Setting::get('colorPageBg','white') }};
             @if(Setting::get('imageBackground'))
             background-image: url("uploads/{{ Setting::get('imageBackground') }}");
+            background-repeat: no-repeat;
             @endif
             
             font-family: Times, Georgia, "Times New Roman", serif;
@@ -55,6 +56,30 @@
             color: {{ Setting::get('colorMenuText','black') }};
             background-color: {{ Setting::get('colorMenuBg','white') }};
         }
+        
+        @if(! Setting::get('pageSearchVisible',true))
+        div.search {
+            display:none;
+        }
+        @endif
+        
+        
+        @if(! Setting::get('pageCategoriesVisible',true))
+        div.categories, div.sub-categories {
+            display:none;
+        }
+        @endif
+        
+        @if( false == Setting::get('pageSearchVisible',true) and false == Setting::get('pageCategoriesVisible',true))
+        .browser[active=title] div.films {
+            height: 100%;
+        }
+        @endif
+        @if( Setting::get('pageSearchVisible',true) and false == Setting::get('pageCategoriesVisible',true))
+        .browser[active=title] div.films {
+            height: 90%;
+        }
+        @endif
         
         .search input {
             color: {{ Setting::get('colorSearchText','black') }};
@@ -75,12 +100,12 @@
             background-color: {{ Setting::get('colorListBg','white') }};
         }
         li.selected {
-            color: {{ Setting::get('colorListSelectedText','white') }};
-            background-color: {{ Setting::get('colorListSelectedBg','#008e36') }};
+            color: {{ Setting::get('colorListTextSelected','white') }};
+            background-color: {{ Setting::get('colorListBgSelected','#008e36') }};
         }
         li:hover {
-            color: {{ Setting::get('colorListHoverText','white') }};
-            background-color: {{ Setting::get('colorListHoverBg','#008e36') }};
+            color: {{ Setting::get('colorListTextHover','white') }};
+            background-color: {{ Setting::get('colorListBgHover','#008e36') }};
         }
         
         .caption {
@@ -123,7 +148,13 @@
                     </div>
 
                     <div class="categories">
-                        <div class="caption">Suche</div>
+                        <div class="caption">
+                            @if(Setting::get('pageSearchVisible',false))
+                            Suche
+                            @else
+                            Kategorien
+                            @endif
+                        </div>
                         <ul class="categories" ng-model="selectedCategory">
                             <li ng-repeat="cat in categories"
                                 ng-click="selectCategory(cat)"
@@ -185,7 +216,14 @@
                         </div>
 
                     </aside>
-                    <div class="caption"><b>@{{selectedFilm.title}}</b><br/>@{{selectedFilm.artist}}</div>
+                    <div class="caption">
+                        <b>
+                            <span ng-show="selectedFilm.title_en">@{{ selectedFilm.title_en }} <i><small>@{{ selectedFilm.title }}</small></i></span>
+                            <span ng-show="!selectedFilm.title_en">@{{ selectedFilm.title }}</span>
+                        </b>
+                        <br/>
+                        @{{selectedFilm.artist}}
+                    </div>
 
                     @{{ selectedFilm.country ? selectedFilm.country : '?' }},
                     @{{ selectedFilm.year ? selectedFilm.year : '?' }},
