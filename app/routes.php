@@ -38,6 +38,9 @@ Route::post('/film',function(){
         $query = $query->where('title','like','%'.Input::get('title').'%')
                         ->orWhere('title_en','like','%'.Input::get('title').'%');
     }
+  //  if (Input::get('title_en')){
+//	$query = $query->where
+    //}
     if (Input::get('artist')){
         $query = $query->where('artist','like','%'.Input::get('artist').'%');
     }
@@ -55,6 +58,7 @@ Route::post('/film',function(){
                 {
                 $q->orWhere('title','like',"%{$search}%");
             }
+		$q->orWhere('title_en','like',"%{$search}%");
 //            if (!Input::get('artist'))
                 {
                 $q->orWhere('artist','like',"%{$search}%");
